@@ -18,6 +18,7 @@
  */
 package org.apache.fineract.portfolio.savings.data;
 
+import lombok.extern.slf4j.Slf4j;
 import static org.apache.fineract.portfolio.savings.SavingsApiConstants.SAVINGS_ACCOUNT_RESOURCE_NAME;
 import static org.apache.fineract.portfolio.savings.SavingsApiConstants.activatedOnDateParamName;
 import static org.apache.fineract.portfolio.savings.SavingsApiConstants.bankNumberParamName;
@@ -62,6 +63,7 @@ import org.apache.fineract.portfolio.savings.exception.TransactionBeforePivotDat
 import org.apache.fineract.useradministration.domain.AppUser;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class SavingsAccountTransactionDataValidator {
@@ -298,8 +300,10 @@ public class SavingsAccountTransactionDataValidator {
                 .resource(SAVINGS_ACCOUNT_RESOURCE_NAME);
 
         if (holdTransaction == null) {
+            log.error("Transaction not found");
             baseDataValidator.failWithCode("validation.msg.validation.errors.exist", "Transaction not found");
         } else if (holdTransaction.getReleaseIdOfHoldAmountTransaction() != null) {
+            log.error("Transaction amount is not on hold");
             baseDataValidator.parameter(SavingsApiConstants.amountParamName).value(holdTransaction.getAmount())
                     .failWithCode("validation.msg.amount.is.not.on.hold", "Transaction amount is not on hold");
         }
@@ -307,6 +311,7 @@ public class SavingsAccountTransactionDataValidator {
         if (holdTransaction != null) {
             boolean isActive = holdTransaction.getSavingsAccount().isActive();
             if (!isActive) {
+                log.error("SavingsApiConstants.ERROR_MSG_SAVINGS_ACCOUNT_NOT_ACTIVE");
                 baseDataValidator.reset().parameter(SavingsApiConstants.statusParamName)
                         .failWithCodeNoParameterAddedToErrorCode(SavingsApiConstants.ERROR_MSG_SAVINGS_ACCOUNT_NOT_ACTIVE);
             }
